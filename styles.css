@@ -248,13 +248,15 @@ td.numeric, th.numeric { text-align: right; }
   .individual-analysis-card { break-inside: auto; }
   .report-learning-map, .report-interpretation { break-inside: auto; }
   .section-title.individual-section { break-before: page; }
+  .individual-legend { margin: 8px 0 16px; }
   .individual-skill-row { break-inside: avoid; }
   h4, h5, h6 { break-after: avoid; }
   body.print-with-students .table-wrap.individual-section { overflow: visible; }
-  body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 7px; }
+  body.print-with-students .table-wrap.individual-section { margin-top: 12px; }
+  body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 9px; }
   body.print-with-students .table-wrap.individual-section th,
-  body.print-with-students .table-wrap.individual-section td { padding: 3px 2px; white-space: normal; overflow-wrap: anywhere; }
-  body.print-with-students .table-wrap.individual-section th { padding: 3px 2px; white-space: normal; overflow-wrap: anywhere; font-size: 6px; }
+  body.print-with-students .table-wrap.individual-section td { padding: 6px 3px; white-space: normal; overflow-wrap: anywhere; }
+  body.print-with-students .table-wrap.individual-section th { padding: 6px 3px; white-space: normal; overflow-wrap: anywhere; font-size: 8px; }
   body.print-with-students .table-wrap.individual-section th:first-child,
   body.print-with-students .table-wrap.individual-section td:first-child { width: 19%; }
   body.print-with-students .table-wrap.individual-section th:nth-child(2),
