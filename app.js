@@ -373,8 +373,8 @@
       </div>
       ${incompleteCount ? `<div class="warning-inline">${incompleteCount} registre/s encara incomplet/s. No entren en les mitjanes, percentils ni distribució del grup fins que cada ítem estiga marcat com a resposta o «En blanc».</div>` : ""}
       <header class="report-heading">
-        <div><div class="eyebrow">Informe de grup</div><h2>Resultats per a orientar la intervenció</h2><p>Resum de les proves completes del grup, sense mostrar noms en l'informe imprimible.</p></div>
-        <button class="primary report-print-button no-print" id="print-report" type="button">Imprimir o guardar en PDF</button>
+        <div><div class="eyebrow">Informe de grup</div><h2>Resultats per a orientar la intervenció</h2><p>Tria si vols incloure també la taula individual amb els noms en el document.</p></div>
+        <div class="report-actions no-print"><label class="report-student-option"><input id="include-student-results" type="checkbox" checked>Incloure noms i resultats individuals</label><button class="primary report-print-button" id="print-report" type="button">Imprimir o guardar en PDF</button></div>
       </header>
       <div class="result-columns report-columns">
         <section class="subcard report-chart-card"><h3>Dimensions de comprensió</h3><p class="helper chart-explainer">Percentatge d'encerts sobre les respostes contestades. Les respostes en blanc es mostren a banda.</p>${domainRows}</section>
@@ -407,7 +407,12 @@
     document.getElementById("delete-student")?.addEventListener("click", deleteStudent);
     document.getElementById("export-json")?.addEventListener("click", exportJson);
     document.getElementById("export-csv")?.addEventListener("click", () => exportCsv(grade));
-    document.getElementById("print-report")?.addEventListener("click", () => window.print());
+    document.getElementById("print-report")?.addEventListener("click", () => {
+      const includeStudents = document.getElementById("include-student-results")?.checked;
+      document.body.classList.toggle("print-with-students", Boolean(includeStudents));
+      window.addEventListener("afterprint", () => document.body.classList.remove("print-with-students"), { once: true });
+      window.print();
+    });
     document.getElementById("change-config")?.addEventListener("click", () => {
       if (!confirm("Vols llevar la clau guardada d'este navegador? El grup i les respostes es conservaran.")) return;
       try { localStorage.removeItem(CONFIG_STORE_KEY); } catch (_) { storageOkay = false; }
