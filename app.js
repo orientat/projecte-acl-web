@@ -384,11 +384,11 @@
     const individualNarratives = completeRows.map(({ student, result }) => {
       const dimensions = DIMENSIONS.map(([key, name]) => {
         const d = result.dimensions[key];
-        return { key, name, pct: d.correct + d.wrong ? d.correct / (d.correct + d.wrong) * 100 : null, correct: d.correct, total: d.total, blank: d.blank };
+        return { key, name, pct: d.correct + d.wrong ? d.correct / (d.correct + d.wrong) * 100 : null, correct: d.correct, answered: d.correct + d.wrong, blank: d.blank };
       }).filter(d => d.pct !== null).sort((a, b) => a.pct - b.pct);
       const weakest = dimensions[0];
       const strongest = dimensions[dimensions.length - 1];
-      const profile = weakest ? `La dimensió amb menys encerts és ${weakest.name} (${Math.round(weakest.pct)}%, ${weakest.correct}/${weakest.total}); la més alta és ${strongest.name} (${Math.round(strongest.pct)}%).` : "No hi ha respostes contestades per a comparar les dimensions.";
+      const profile = weakest ? `La dimensió amb menys encerts és ${weakest.name} (${Math.round(weakest.pct)}%, ${weakest.correct}/${weakest.answered} respostes contestades${weakest.blank ? ` i ${weakest.blank} en blanc` : ""}); la més alta és ${strongest.name} (${Math.round(strongest.pct)}%).` : "No hi ha respostes contestades per a comparar les dimensions.";
       const blanks = result.blank ? ` Ha deixat ${result.blank} resposta/es en blanc, que es revisen per separat dels errors.` : " No consten respostes en blanc.";
       const support = result.decatype !== null && result.decatype <= 3
         ? `<p><strong>Possible intervenció (decatipus ${result.decatype}):</strong> prioritzar activitats breus i guiades de ${weakest?.name.toLocaleLowerCase() || "comprensió lectora"}. ${weakest ? interventionIdeas[weakest.key] : "Revisar primer les respostes i el procés lector amb l'alumne/a."} Repassar després les respostes amb el text al davant i observar si pot explicar quina pista l'ha ajudat.</p>`
