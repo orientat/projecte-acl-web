@@ -138,6 +138,34 @@ h1 { margin: 5px 0 6px; color: var(--brand); font-size: clamp(26px, 4vw, 38px); 
 .report-interpretation p, .individual-analysis-card p { margin: 7px 0 0; }
 .individual-analysis-card { margin-bottom: 9px; line-height: 1.45; }
 .individual-analysis-card h4 { margin: 0; color: var(--brand); font-size: 14px; }
+.report-learning-map { margin-top: 14px; line-height: 1.5; }
+.report-learning-map > p { margin: 0 0 14px; color: var(--muted); }
+.report-learning-map > h4, .group-action-plan h4 { margin: 18px 0 9px; color: var(--brand); font-size: 14px; }
+.learning-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.learning-card { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 11px; background: #fbfdfb; }
+.learning-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.learning-card-head h5 { margin: 0; font-size: 14px; }
+.learning-card-head > strong, .learning-card-head > span { color: var(--brand); font-weight: 800; white-space: nowrap; }
+.learning-card p, .individual-skill-row p { margin: 7px 0 0; font-size: 12px; line-height: 1.45; }
+.text-learning-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.group-action-plan { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+.group-action-plan h4 { margin-top: 6px; }
+.group-action-plan p, .group-action-plan li { line-height: 1.5; }
+.group-action-plan ul { padding-left: 21px; }
+.individual-legend { line-height: 1.5; }
+.individual-scoreline { margin-top: 8px !important; color: #31453d; }
+.individual-score-explain { padding: 7px 9px; border-left: 3px solid var(--brand-pink); background: #fbf6f8; }
+.individual-analysis-card h5 { margin: 14px 0 8px; font-size: 13px; }
+.individual-skill-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.individual-skill-row { min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: 9px; background: #fbfdfb; }
+.individual-type-profile { margin-top: 12px; }
+.individual-type-profile > ul { padding-left: 20px; }
+.individual-type-profile li { margin: 7px 0; line-height: 1.45; }
+.individual-support { margin-top: 12px; padding: 10px 12px; border-radius: 9px; background: #f8f5e9; line-height: 1.45; }
+.individual-support h6 { margin: 0; font-size: 13px; color: var(--brand); }
+.individual-support p { margin: 7px 0; }
+.individual-support ol { margin: 6px 0; padding-left: 21px; }
+.individual-support li { padding: 2px 0; }
 .score-row { display: grid; grid-template-columns: minmax(115px, 1fr) minmax(72px, auto) 85px; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #edf1ee; font-size: 13px; }
 .score-row:first-of-type { border-top: 0; }
 .score-detail { color: var(--muted); font-size: 12px; }
@@ -172,6 +200,7 @@ td.numeric, th.numeric { text-align: right; }
   .question-grid { grid-template-columns: 1fr; }
   .result-grid { grid-template-columns: repeat(2, minmax(110px, 1fr)); }
   .progress-box { text-align: left; }
+  .learning-grid, .text-learning-grid, .individual-skill-list { grid-template-columns: 1fr; }
 }
 @media print {
   @page { size: A4 landscape; margin: 12mm; }
@@ -200,7 +229,14 @@ td.numeric, th.numeric { text-align: right; }
   .report-method-note { margin-top: 8px; padding: 7px 9px; }
   .report-interpretation, .individual-analysis-card { font-size: 10px; }
   .individual-analysis-card h4 { font-size: 11px; }
-  .individual-analysis-card { break-inside: avoid; }
+  .report-learning-map, .learning-card, .individual-skill-row, .individual-type-profile, .individual-support { font-size: 9px; }
+  .report-learning-map > h4, .group-action-plan h4, .individual-analysis-card h5 { font-size: 10px; }
+  .learning-grid, .individual-skill-list { gap: 5px; }
+  .learning-card, .individual-skill-row { padding: 6px; }
+  .learning-card p, .individual-skill-row p, .individual-type-profile li { font-size: 8px; }
+  .individual-analysis-card { break-inside: auto; }
+  .individual-skill-row { break-inside: avoid; }
+  h4, h5, h6 { break-after: avoid; }
   body.print-with-students .table-wrap.individual-section { overflow: visible; }
   body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 8px; }
   body.print-with-students .table-wrap.individual-section th,
