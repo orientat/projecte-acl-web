@@ -223,7 +223,7 @@
           <div class="privacy-chip">Les dades es queden en este navegador</div>
         </header>
         <header class="print-report-header">
-          <p class="print-report-kicker">AVALUACIÓ DE LA COMPRENSIÓ LECTORA · ${esc(grade.testId)}</p>
+          <p class="print-report-kicker">AVALUACIÓ DE LA COMPRENSIÓ LECTORA · ACL</p>
           <h1>Informe de grup</h1>
           <p class="print-report-intro" id="print-report-intro">${esc(reportIntro(group.reportAuthor))}</p>
         </header>
