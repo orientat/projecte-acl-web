@@ -12,6 +12,24 @@
     ["inferencial", "Inferencial"],
     ["critica", "Crítica"]
   ];
+  const DIMENSION_GUIDE = {
+    literal: {
+      meaning: "Recupera informació que el text diu de manera explícita: qui, què, quan, on i com.",
+      practice: "Busca en el text la frase que respon la pregunta; subratlla-la i diferencia les dades importants de les secundàries."
+    },
+    reorganitzacio: {
+      meaning: "Ordena i agrupa la informació per entendre el conjunt: seqüències, idees principals, classificacions i resums.",
+      practice: "Ordena vinyetes o fets, agrupa dades amb un criteri i posa títols als paràgrafs abans de fer-ne un esquema breu."
+    },
+    inferencial: {
+      meaning: "Relaciona pistes del text amb allò que ja se sap per deduir informació que no apareix dita directament.",
+      practice: "Prediu què pot passar, explica causes i conseqüències i dedueix paraules pel context; demana quina pista justifica cada inferència."
+    },
+    critica: {
+      meaning: "Valora el contingut i el llenguatge i formula un judici propi raonat a partir del text.",
+      practice: "Distingix fets i opinions o realitat i fantasia; expressa una valoració i justifica-la amb una evidència del text."
+    }
+  };
   CFG = window.ACL_CONFIG || loadStoredConfig();
   if (!window.ACL_PERCENTILES && CFG?.percentiles) PERCENTILES = CFG.percentiles;
   const root = document.getElementById("app");
@@ -264,6 +282,19 @@
     return DIMENSIONS.find(([id]) => id === key)?.[1] || "Dimensió pendent";
   }
 
+  function textTypeGuide(name) {
+    const key = String(name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase();
+    if (key.includes("narr")) return "Text amb fets, personatges o una seqüència: cal seguir què passa i com es relacionen els esdeveniments.";
+    if (key.includes("exposit") || key.includes("inform")) return "Text que explica o presenta informació: cal localitzar la idea principal, les dades que la desenvolupen i com s'organitzen.";
+    if (key.includes("poet")) return "Text poètic: cal captar el sentit global i interpretar expressions, imatges o usos figurats del llenguatge.";
+    if (key.includes("dades")) return "Text amb dades: cal localitzar valors, comparar-los i interpretar què indiquen en conjunt.";
+    if (key.includes("grafic") || key.includes("graf")) return "Representació gràfica: cal llegir títol, llegenda i eixos, i relacionar les dades amb la pregunta.";
+    if (key.includes("matematic")) return "Text matemàtic o problema: cal comprendre les dades, les relacions entre elles i què es demana.";
+    if (key.includes("endevin")) return "Endevinalla: cal combinar les pistes explícites i inferir a quina resposta apunten.";
+    if (key.includes("instru")) return "Text instructiu: cal identificar la informació necessària i seguir l'ordre de les indicacions.";
+    return "Resultat en aquesta categoria de textos. Compara'l amb les altres categories i revisa els ítems concrets abans d'atribuir la diferència a una habilitat específica.";
+  }
+
   function calculate(student, grade) {
     const items = grade.items;
     const result = { correct: 0, wrong: 0, blank: 0, unrecorded: 0, dimensions: {}, textTypes: {}, raw: 0 };
@@ -344,7 +375,7 @@
     const domainRows = domainData.map(d => `<div class="report-chart-row">
       <div class="report-chart-label"><strong>${d.name}</strong><strong>${completeRows.length && d.answered ? `${Math.round(d.correctPct)}%` : "—"}</strong></div>
       <div class="report-chart-track" role="img" aria-label="${d.name}: ${completeRows.length && d.answered ? `${Math.round(d.correctPct)} per cent d'encerts` : "sense dades"}"><span style="width:${d.correctPct}%"></span></div>
-      <div class="report-chart-detail">${completeRows.length ? `${d.correct}/${d.total} encerts · ${d.wrong} errors · ${d.blank} en blanc${d.meanPc !== null ? ` · PC mig ${d.meanPc}` : ""}` : "Esperant una prova completa"}</div>
+      <div class="report-chart-detail">${completeRows.length ? `${d.correct}/${d.answered} encerts en respostes contestades · ${d.wrong} errors · ${d.blank} en blanc${d.meanPc !== null ? ` · PC mig ${d.meanPc}` : ""}` : "Esperant una prova completa"}</div>
     </div>`).join("");
     const types = [...new Set(grade.items.map(i => i.textType).filter(Boolean))];
     const typeData = completeRows.length ? types.map(name => {
@@ -359,8 +390,13 @@
     const typeRows = typeData.map(d => `<div class="report-chart-row">
       <div class="report-chart-label"><strong>${esc(d.name)}</strong><strong>${d.answered ? `${Math.round(d.pct)}%` : "—"}</strong></div>
       <div class="report-chart-track" role="img" aria-label="${esc(d.name)}: ${d.answered ? `${Math.round(d.pct)} per cent d'encerts` : "sense dades"}"><span style="width:${d.pct}%"></span></div>
-      <div class="report-chart-detail">${d.correct}/${d.total} encerts · ${d.wrong} errors · ${d.blank} en blanc</div>
+      <div class="report-chart-detail">${d.correct}/${d.answered} encerts en respostes contestades · ${d.wrong} errors · ${d.blank} en blanc</div>
     </div>`).join("") || `<p class="helper">${completeRows.length ? "No hi ha una classificació textual completa per a este curs." : "Esperant una prova completa per a mostrar els totals."}</p>`;
+    const dimensionGuideCards = domainData.map(d => {
+      const guide = DIMENSION_GUIDE[d.key];
+      return `<article class="learning-card"><div class="learning-card-head"><h5>${esc(d.name)}</h5><strong>${d.answered ? `${Math.round(d.correctPct)}%` : "—"}</strong></div><div class="report-chart-track"><span style="width:${d.correctPct}%"></span></div><p><strong>Què avalua:</strong> ${guide.meaning}</p><p><strong>En este grup:</strong> ${completeRows.length && d.answered ? `${d.correct} encerts de ${d.answered} respostes contestades; ${d.blank} en blanc.` : "Encara no hi ha respostes contestades suficients per a valorar-la."}</p><p><strong>Per a treballar-la:</strong> ${guide.practice}</p></article>`;
+    }).join("");
+    const typeGuideCards = typeData.map(d => `<article class="learning-card text-learning-card"><div class="learning-card-head"><h5>${esc(d.name)}</h5><strong>${d.answered ? `${Math.round(d.pct)}%` : "—"}</strong></div><div class="report-chart-track"><span style="width:${d.pct}%"></span></div><p>${textTypeGuide(d.name)}</p><p><strong>En este grup:</strong> ${d.answered ? `${d.correct} encerts de ${d.answered} respostes contestades; ${d.blank} en blanc.` : "No hi ha respostes contestades en esta categoria."}</p></article>`).join("") || `<p class="helper">La plantilla no té categories de text interpretables per a este curs.</p>`;
     const focusAreas = [
       ...domainData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.correctPct, kind: "Dimensió" })),
       ...typeData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.pct, kind: "Tipus textual" }))
@@ -373,8 +409,12 @@
       const dimensionalReading = best && needs
         ? `En les dimensions, els percentatges més alts i més baixos corresponen, respectivament, a ${best.name} (${Math.round(best.correctPct)}%) i ${needs.name} (${Math.round(needs.correctPct)}%).`
         : "No hi ha respostes contestades suficients per a comparar les dimensions.";
-      return `<p>Hi ha ${completeRows.length} proves completes per a la interpretació grupal. La puntuació mitjana és ${mean.toFixed(1)} encerts de ${grade.itemCount}. ${dimensionalReading} Les respostes en blanc sumen ${completeRows.reduce((sum, r) => sum + r.result.blank, 0)}; convé revisar-les separadament dels errors.</p>${weakestTypes.length ? `<p>Per tipus de text, els percentatges més baixos corresponen a ${weakestTypes.map(t => `${esc(t.name)} (${Math.round(t.pct)}%)`).join(" i ")}. Estos resultats poden orientar la selecció de textos i activitats, tenint en compte quants ítems representa cada categoria.</p>` : ""}<p>Els resultats individuals situen ${lowCount} casos en decatipus 1–3 segons els intervals carregats. La guia ACL planteja els decatipus com una comparació normativa i recomana interpretar-los junt amb les dimensions, els tipus d'error i l'observació docent; per això, este informe orienta la planificació i no és un diagnòstic.</p>`;
+      return `<p>Hi ha ${completeRows.length} proves completes per a la interpretació grupal. La puntuació mitjana és ${mean.toFixed(1)} encerts de ${grade.itemCount}. ${dimensionalReading} Les respostes en blanc sumen ${completeRows.reduce((sum, r) => sum + r.result.blank, 0)}; convé revisar-les separadament dels errors.</p>${weakestTypes.length ? `<p>Per tipus de text, els percentatges més baixos corresponen a ${weakestTypes.map(t => `${esc(t.name)} (${Math.round(t.pct)}%)`).join(" i ")}. Estos resultats poden orientar la selecció de textos i activitats, tenint en compte quants ítems representa cada categoria.</p>` : ""}<p>Els resultats individuals situen ${lowCount} casos en decatipus 1–3 segons els intervals carregats. Llig esta classificació junt amb les dimensions, els errors, els blancs i el treball d'aula; per si sola, no és un diagnòstic.</p>`;
     })() : `<p>Encara no hi ha proves completes per a redactar la interpretació grupal.</p>`;
+    const groupPriorityDimensions = [...domainData].filter(d => d.answered).sort((a, b) => a.correctPct - b.correctPct).slice(0, 2);
+    const groupPriorityTypes = [...typeData].filter(d => d.answered).sort((a, b) => a.pct - b.pct).slice(0, 2);
+    const groupInterventionRows = groupPriorityDimensions.map(d => `<li><strong>${esc(d.name)} (${Math.round(d.correctPct)}%):</strong> ${DIMENSION_GUIDE[d.key].practice}</li>`).join("");
+    const groupTypeAction = groupPriorityTypes.length ? `<p>Per a donar més pràctica, incorpora textos de ${groupPriorityTypes.map(d => `<strong>${esc(d.name)}</strong>`).join(" i ")} i demana que l'alumnat explique quines pistes del text ha utilitzat.</p>` : "";
     const interventionIdeas = {
       literal: "Practicar la localització d'informació explícita amb preguntes qui, què, quan i on; subratllar la frase del text que justifica cada resposta i distingir informació rellevant de la secundària.",
       reorganitzacio: "Ordenar seqüències, agrupar dades amb criteris donats, triar títols que resumixen paràgrafs i elaborar esquemes o resums breus sense informació redundant.",
@@ -384,16 +424,35 @@
     const individualNarratives = completeRows.map(({ student, result }) => {
       const dimensions = DIMENSIONS.map(([key, name]) => {
         const d = result.dimensions[key];
-        return { key, name, pct: d.correct + d.wrong ? d.correct / (d.correct + d.wrong) * 100 : null, correct: d.correct, answered: d.correct + d.wrong, blank: d.blank };
+        return { key, name, pct: d.correct + d.wrong ? d.correct / (d.correct + d.wrong) * 100 : null, correct: d.correct, answered: d.correct + d.wrong, blank: d.blank, total: d.total };
+      });
+      const assessedDimensions = dimensions.filter(d => d.pct !== null).sort((a, b) => a.pct - b.pct);
+      const weakest = assessedDimensions[0];
+      const strongest = assessedDimensions[assessedDimensions.length - 1];
+      const typeProfile = types.map(name => {
+        const d = result.textTypes[name] || { correct: 0, wrong: 0, blank: 0, total: 0 };
+        const answered = d.correct + d.wrong;
+        return { name, correct: d.correct, wrong: d.wrong, blank: d.blank, answered, total: d.total, pct: answered ? d.correct / answered * 100 : null };
       }).filter(d => d.pct !== null).sort((a, b) => a.pct - b.pct);
-      const weakest = dimensions[0];
-      const strongest = dimensions[dimensions.length - 1];
-      const profile = weakest ? `La dimensió amb menys encerts és ${weakest.name} (${Math.round(weakest.pct)}%, ${weakest.correct}/${weakest.answered} respostes contestades${weakest.blank ? ` i ${weakest.blank} en blanc` : ""}); la més alta és ${strongest.name} (${Math.round(strongest.pct)}%).` : "No hi ha respostes contestades per a comparar les dimensions.";
-      const blanks = result.blank ? ` Ha deixat ${result.blank} resposta/es en blanc, que es revisen per separat dels errors.` : " No consten respostes en blanc.";
+      const weakestType = typeProfile[0];
+      const dimensionRows = dimensions.map(d => {
+        const guide = DIMENSION_GUIDE[d.key];
+        const stat = d.pct === null ? "No hi ha respostes contestades en esta dimensió." : `${d.correct}/${d.answered} encerts (${Math.round(d.pct)}%)${d.blank ? ` i ${d.blank} en blanc` : ""}.`;
+        return `<div class="individual-skill-row"><div class="learning-card-head"><strong>${esc(d.name)}</strong><span>${d.pct === null ? "Sense dades" : `${Math.round(d.pct)}%`}</span></div><div class="report-chart-track"><span style="width:${d.pct || 0}%"></span></div><p><strong>Què avalua:</strong> ${guide.meaning}</p><p><strong>Resultat:</strong> ${stat}</p><p><strong>Per a practicar:</strong> ${guide.practice}</p></div>`;
+      }).join("");
+      const textRows = typeProfile.map(d => `<li><strong>${esc(d.name)}:</strong> ${Math.round(d.pct)}% (${d.correct}/${d.answered} respostes contestades${d.blank ? `, ${d.blank} en blanc` : ""}). ${textTypeGuide(d.name)}</li>`).join("");
+      const relativeProfile = weakest
+        ? `<p><strong>Com llegir el perfil:</strong> el resultat més alt entre les dimensions és ${strongest.name} (${Math.round(strongest.pct)}%); el més baix és ${weakest.name} (${Math.round(weakest.pct)}%). És una comparació dins d'esta prova: assenyala per on començar el treball, no una etiqueta sobre la capacitat general de l'alumne/a.</p>`
+        : `<p>No hi ha respostes contestades suficients per a comparar les dimensions.</p>`;
+      const typeSummary = textRows ? `<div class="individual-type-profile"><strong>Resultats per tipus de text</strong><ul>${textRows}</ul><p>Estos percentatges descriuen com ha anat en les categories presents en esta prova. Per a saber quina habilitat concreta cal reforçar, revisa també les preguntes i les dimensions associades.</p></div>` : "";
+      const decatypeExplanation = result.decatype !== null
+        ? `<p class="individual-score-explain"><strong>Decatipus ${result.decatype}:</strong> tram que correspon a la puntuació directa segons els intervals configurats per a este curs. Els decatipus 1–3 activen una proposta de suport en este informe.</p>`
+        : `<p class="individual-score-explain">${result.decatypePending ? "La puntuació directa no té un decatipus assignat en els intervals carregats." : "El decatipus no es pot calcular amb estes dades."}</p>`;
       const support = result.decatype !== null && result.decatype <= 3
-        ? `<p><strong>Possible intervenció (decatipus ${result.decatype}):</strong> prioritzar activitats breus i guiades de ${weakest?.name.toLocaleLowerCase() || "comprensió lectora"}. ${weakest ? interventionIdeas[weakest.key] : "Revisar primer les respostes i el procés lector amb l'alumne/a."} Repassar després les respostes amb el text al davant i observar si pot explicar quina pista l'ha ajudat.</p>`
-        : "";
-      return `<article class="subcard individual-analysis-card"><h4>${esc(student.name)} · ${result.raw}/${grade.itemCount} · ${result.decatype === null ? (result.decatypePending ? "decatipus pendent" : "decatipus no disponible") : `decatipus ${result.decatype}`}</h4><p>${profile}${blanks}</p>${support}</article>`;
+        ? `<div class="individual-support"><h6>Proposta de suport prioritària</h6><p>Comença per ${weakest ? `la dimensió ${weakest.name.toLocaleLowerCase()}` : "les respostes que generen més dificultat"}${weakestType ? ` i usa textos de tipus ${esc(weakestType.name)}` : ""}. ${weakest ? interventionIdeas[weakest.key] : "Revisa amb l'alumne/a com ha llegit i com ha triat les respostes."}</p><ol><li>Llig un fragment breu i pensa en veu alta per mostrar com resoldre una pregunta.</li><li>Resoleu-ne una altra junts: localitzeu la pista, relacioneu-la amb la pregunta i expliqueu la resposta.</li><li>Deixa que ho intente amb un fragment nou i registra si pot justificar la resposta amb autonomia.</li></ol><p>Revisa les respostes en blanc a banda: poden requerir una comprovació de comprensió de la consigna, del temps o de la decisió de respondre.</p></div>`
+        : `<div class="individual-support"><h6>Següent pas d'aula</h6><p>${weakest ? `Mantín la fortalesa relativa en ${strongest.name.toLocaleLowerCase()} i practica ${weakest.name.toLocaleLowerCase()} amb l'activitat indicada en el perfil.` : "Completa o revisa les respostes per a poder interpretar les dimensions."}</p></div>`;
+      const dectypeLabel = result.decatype === null ? (result.decatypePending ? "decatipus pendent" : "decatipus no disponible") : `decatipus ${result.decatype}`;
+      return `<article class="subcard individual-analysis-card"><h4>${esc(student.name)}</h4><p class="individual-scoreline"><strong>Puntuació directa: ${result.raw}/${grade.itemCount}</strong> · ${result.correct} encerts · ${result.wrong} errors · ${result.blank} en blanc · ${dectypeLabel}</p><p>La puntuació directa compta les respostes correctes. Els errors són respostes contestades que no coincidixen amb la clau; les respostes en blanc es compten a banda.</p>${decatypeExplanation}${relativeProfile}<h5>Resultats per dimensió i com treballar-los</h5><div class="individual-skill-list">${dimensionRows}</div>${typeSummary}${support}</article>`;
     }).join("");
     const maxDecatypeCount = Math.max(1, ...decatypeCounts.map(d => d.count));
     const decatypeBars = decatypeCounts.map(d => `<div class="distribution-column" aria-label="Decatipus ${d.level}: ${d.count} alumnes">
@@ -427,11 +486,13 @@
         <section class="subcard report-chart-card distribution-card"><h3>Distribució per decatipus</h3><p class="helper chart-explainer">Nombre d'alumnes en cada nivell, segons els intervals locals.</p><div class="distribution-chart" role="img" aria-label="Distribució del grup entre els deu decatipus">${decatypeBars}</div>${pendingDecatypes ? `<p class="helper">${pendingDecatypes} resultat/s pendent/s de revisar el barem.</p>` : ""}<p class="helper">Es compten només proves completes amb puntuació classificable.</p></section>
         <section class="subcard report-focus-card"><h3>Àrees amb percentatge d'encerts més baix</h3>${focusAreas.length ? `<ol>${focusAreas.map(a => `<li><strong>${esc(a.name)}</strong> <span>${Math.round(a.pct)}% · ${a.kind}</span></li>`).join("")}</ol><p class="helper">Són pistes per a revisar objectius i activitats amb la informació d'aula. No són una conclusió diagnòstica.</p>` : `<p class="helper">Cal completar almenys una prova per a calcular les àrees del grup.</p>`}</section>
       </div>
-      <section class="subcard report-interpretation"><h3>Interpretació del grup</h3>${groupNarrative}<p><strong>Possible resposta educativa:</strong> planificar activitats a partir de les dimensions amb resultats més baixos (${focusAreas.filter(a => a.kind === "Dimensió").map(a => esc(a.name)).join(", ") || "sense dades dimensionals suficients"}); modelar en veu alta com es troba una pista, es relaciona amb la pregunta i es justifica la resposta. Revisar l'evolució amb treballs d'aula, no només amb esta puntuació.</p></section>
-      <div class="report-method-note">El resum grupal utilitza només les proves completes. Els percentatges comparen encerts amb respostes contestades i compten els blancs a banda. Els decatipus i percentils són provisionals fins a confirmar-los amb el manual.</div>
+      <section class="subcard report-learning-map"><h3>Què avalua la prova i què volen dir les àrees?</h3><p>Les ACL observen com l'alumnat comprén textos de diferents tipus. Les preguntes s'agrupen en quatre dimensions: recuperar informació, reorganitzar-la, inferir i valorar el contingut. Les barres mostren el percentatge d'encerts del grup en cada àrea; el percentatge es calcula sobre les respostes contestades i els blancs es compten a banda.</p><h4>Dimensions de comprensió</h4><div class="learning-grid">${dimensionGuideCards}</div><h4>Tipus de text</h4><div class="learning-grid text-learning-grid">${typeGuideCards}</div></section>
+      <section class="subcard report-interpretation"><h3>Interpretació del grup</h3>${groupNarrative}<div class="group-action-plan"><h4>Proposta de treball per al grup</h4>${groupInterventionRows ? `<p>Comença per les dimensions amb percentatges d'encert més baixos:</p><ul>${groupInterventionRows}</ul>` : `<p>Calen respostes contestades per a identificar quines dimensions convé prioritzar.</p>`}${groupTypeAction}<p>Modela en veu alta com es troba una pista, com es relaciona amb la pregunta i com s'explica la resposta. Després, deixa temps perquè l'alumnat ho practique amb textos nous i revisa el progrés en les tasques d'aula.</p></div></section>
+      <div class="report-method-note">El resum grupal utilitza només les proves completes. Els percentatges comparen encerts amb respostes contestades i compten els blancs a banda. Els decatipus i els PC es mostren segons els intervals i la taula carregats per al curs seleccionat.</div>
       <h3 class="section-title individual-section">Registre individual</h3>
-      <div class="table-wrap individual-section"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus*</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
-      <h3 class="section-title individual-section">Lectura individual i propostes per a decatipus 1–3</h3>
+      <p class="helper individual-section individual-legend"><strong>Com llegir la taula:</strong> la puntuació directa és el nombre d'encerts sobre el total d'ítems; els errors són respostes contestades incorrectes i els blancs es mostren per separat. En les dimensions, el percentatge compara encerts amb respostes contestades. PC és el percentil que mostra la taula de referència carregada; no és un percentatge d'encerts.</p>
+      <div class="table-wrap individual-section"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
+      <h3 class="section-title individual-section">Interpretació individual i orientacions d'aula</h3>
       ${individualNarratives || `<p class="helper individual-section">Les interpretacions individuals apareixeran quan hi haja proves completes.</p>`}
     </section>`;
   }
