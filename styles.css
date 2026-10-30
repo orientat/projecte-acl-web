@@ -210,10 +210,10 @@ td.numeric, th.numeric { text-align: right; }
   body { background: #fff; color: #111; }
   .app-shell { width: 100%; max-width: none; padding: 0; }
   .brand-row { display: none !important; }
-  .print-report-header { display: block; margin: 0 0 12px; padding: 0 0 10px; border-bottom: 2px solid var(--brand-pink); }
-  .print-report-kicker { margin: 8px 0 2px; color: var(--brand-pink); font-size: 9px; font-weight: 750; letter-spacing: .12em; }
-  .print-report-header h1 { margin: 2px 0 5px; color: var(--brand); font-size: 26px; line-height: 1.1; }
-  .print-report-intro { max-width: 175mm; margin: 7px 0 0; color: #35443d; font-size: 10px; line-height: 1.5; }
+  .print-report-header { display: block; margin: 0 0 17px; padding: 0 0 15px; border-bottom: 2px solid var(--brand-pink); }
+  .print-report-kicker { margin: 11px 0 6px; color: var(--brand-pink); font-size: 11px; font-weight: 750; letter-spacing: .12em; }
+  .print-report-header h1 { margin: 4px 0 9px; color: var(--brand); font-size: 30px; line-height: 1.2; }
+  .print-report-intro { max-width: 175mm; margin: 12px 0 2px; color: #35443d; font-size: 12px; line-height: 1.6; }
   .report-heading { display: none !important; }
   .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, #save-status { display: none !important; }
   .individual-section { display: none !important; }
