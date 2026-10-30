@@ -108,6 +108,29 @@ h1 { margin: 5px 0 6px; color: var(--brand); font-size: clamp(26px, 4vw, 38px); 
 .result-columns { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
 .subcard { border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
 .subcard h3 { margin: 0 0 10px; font-size: 15px; }
+.report-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 22px 0 4px; }
+.report-heading h2 { margin: 3px 0 4px; color: var(--brand); font-size: 23px; }
+.report-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.report-print-button { flex: 0 0 auto; }
+.report-columns { align-items: start; }
+.report-chart-card, .report-focus-card { min-width: 0; }
+.chart-explainer { margin: -4px 0 10px; }
+.report-chart-row { padding: 9px 0; border-top: 1px solid #edf1ee; }
+.report-chart-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13px; }
+.report-chart-label > strong:last-child { color: var(--brand); font-size: 14px; white-space: nowrap; }
+.report-chart-track { width: 100%; height: 10px; margin-top: 6px; border-radius: 10px; background: #edf1ee; overflow: hidden; }
+.report-chart-track > span { display: block; height: 100%; min-width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--brand-pink), var(--green)); }
+.report-chart-detail { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.distribution-chart { display: grid; grid-template-columns: repeat(10, minmax(24px, 1fr)); gap: 6px; height: 145px; padding: 8px 4px 0; border-bottom: 1px solid var(--line); }
+.distribution-column { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; min-width: 0; color: var(--muted); }
+.distribution-column > strong { color: var(--ink); font-size: 11px; line-height: 1; }
+.distribution-track { display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 100px; }
+.distribution-track > span { display: block; width: min(24px, 100%); min-height: 0; border-radius: 5px 5px 0 0; background: var(--brand-pink); }
+.distribution-column small { padding-bottom: 5px; font-size: 10px; }
+.report-focus-card ol { margin: 0; padding-left: 21px; }
+.report-focus-card li { padding: 5px 0; color: var(--ink); }
+.report-focus-card li span { display: block; color: var(--muted); font-size: 12px; }
+.report-method-note { margin-top: 14px; padding: 10px 12px; border-left: 3px solid var(--brand-pink); background: #fbf6f8; color: #5b4a52; font-size: 11px; line-height: 1.45; }
 .score-row { display: grid; grid-template-columns: minmax(115px, 1fr) minmax(72px, auto) 85px; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid #edf1ee; font-size: 13px; }
 .score-row:first-of-type { border-top: 0; }
 .score-detail { color: var(--muted); font-size: 12px; }
@@ -143,3 +166,28 @@ td.numeric, th.numeric { text-align: right; }
   .result-grid { grid-template-columns: repeat(2, minmax(110px, 1fr)); }
   .progress-box { text-align: left; }
 }
+@media print {
+  @page { size: A4 portrait; margin: 12mm; }
+  body { background: #fff; color: #111; }
+  .app-shell { width: 100%; max-width: none; padding: 0; }
+  .brand-row { margin-bottom: 10px; }
+  .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, .individual-section, #save-status { display: none !important; }
+  .topbar { margin: 0 0 8px; padding: 0 0 8px; border: 0; border-bottom: 1px solid #ccd5d0; border-radius: 0; box-shadow: none; }
+  .group-meta { gap: 6px; }
+  .meta-pill { background: #fff; padding: 4px 7px; font-size: 10px; }
+  .panel-card { padding: 0; border: 0; box-shadow: none; }
+  .report-heading { margin: 10px 0 2px; }
+  .report-heading h2 { font-size: 19px; }
+  .result-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .metric { padding: 8px; }
+  .metric-value { font-size: 18px; }
+  .result-columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .subcard { padding: 9px; border-radius: 8px; break-inside: avoid; }
+  .subcard h3 { font-size: 12px; }
+  .report-chart-row { padding: 6px 0; }
+  .report-chart-detail, .chart-explainer, .report-focus-card li span, .report-method-note { font-size: 9px; }
+  .distribution-chart { height: 112px; }
+  .distribution-track { height: 72px; }
+  .report-method-note { margin-top: 8px; padding: 7px 9px; }
+}
+
