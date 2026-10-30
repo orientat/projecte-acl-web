@@ -433,7 +433,6 @@
       <div class="table-wrap individual-section"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus*</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
       <h3 class="section-title individual-section">Lectura individual i propostes per a decatipus 1–3</h3>
       ${individualNarratives || `<p class="helper individual-section">Les interpretacions individuals apareixeran quan hi haja proves completes.</p>`}
-      <p class="footnote individual-section">Els perfils i les activitats són orientatius i es deriven de les dimensions descrites en la guia ACL; contrasteu-los amb el procés lector, les produccions i l'observació d'aula. Els decatipus provenen dels intervals del llibre Excel actual i els PC de la taula local; cal confirmar-ne la font i correspondència amb el manual.</p>
     </section>`;
   }
 
