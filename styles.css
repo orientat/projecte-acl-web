@@ -211,11 +211,9 @@ td.numeric, th.numeric { text-align: right; }
   .app-shell { width: 100%; max-width: none; padding: 0; }
   .brand-row { display: none !important; }
   .print-report-header { display: block; margin: 0 0 12px; padding: 0 0 10px; border-bottom: 2px solid var(--brand-pink); }
-  .print-report-school { color: var(--brand); font-size: 12px; font-weight: 800; letter-spacing: .02em; }
   .print-report-kicker { margin: 8px 0 2px; color: var(--brand-pink); font-size: 9px; font-weight: 750; letter-spacing: .12em; }
   .print-report-header h1 { margin: 2px 0 5px; color: var(--brand); font-size: 26px; line-height: 1.1; }
-  .print-report-author { margin: 3px 0 8px; color: #31453d; font-size: 10px; }
-  .print-report-intro { max-width: 175mm; margin: 7px 0 0; color: #35443d; font-size: 10px; line-height: 1.45; }
+  .print-report-intro { max-width: 175mm; margin: 7px 0 0; color: #35443d; font-size: 10px; line-height: 1.5; }
   .report-heading { display: none !important; }
   .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, #save-status { display: none !important; }
   .individual-section { display: none !important; }
