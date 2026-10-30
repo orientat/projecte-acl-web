@@ -112,6 +112,9 @@ h1 { margin: 5px 0 6px; color: var(--brand); font-size: clamp(26px, 4vw, 38px); 
 .report-heading h2 { margin: 3px 0 4px; color: var(--brand); font-size: 23px; }
 .report-heading p { margin: 0; color: var(--muted); font-size: 13px; }
 .report-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.report-author-control { display: flex; flex-direction: column; gap: 4px; color: #42534e; font-size: 11px; font-weight: 650; }
+.report-author-control input { width: 230px; max-width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: var(--ink); font: inherit; font-weight: 450; }
+.print-report-header { display: none; }
 .report-student-option { display: flex; align-items: center; gap: 7px; color: #42534e; font-size: 12px; font-weight: 650; }
 .report-student-option input { accent-color: var(--brand); width: 16px; height: 16px; margin: 0; }
 .report-print-button { flex: 0 0 auto; }
@@ -206,7 +209,14 @@ td.numeric, th.numeric { text-align: right; }
   @page { size: A4 portrait; margin: 10mm; }
   body { background: #fff; color: #111; }
   .app-shell { width: 100%; max-width: none; padding: 0; }
-  .brand-row { margin-bottom: 10px; }
+  .brand-row { display: none !important; }
+  .print-report-header { display: block; margin: 0 0 12px; padding: 0 0 10px; border-bottom: 2px solid var(--brand-pink); }
+  .print-report-school { color: var(--brand); font-size: 12px; font-weight: 800; letter-spacing: .02em; }
+  .print-report-kicker { margin: 8px 0 2px; color: var(--brand-pink); font-size: 9px; font-weight: 750; letter-spacing: .12em; }
+  .print-report-header h1 { margin: 2px 0 5px; color: var(--brand); font-size: 26px; line-height: 1.1; }
+  .print-report-author { margin: 3px 0 8px; color: #31453d; font-size: 10px; }
+  .print-report-intro { max-width: 175mm; margin: 7px 0 0; color: #35443d; font-size: 10px; line-height: 1.45; }
+  .report-heading { display: none !important; }
   .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, #save-status { display: none !important; }
   .individual-section { display: none !important; }
   body.print-with-students .individual-section { display: block !important; }
