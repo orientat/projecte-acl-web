@@ -13,6 +13,7 @@
     ["critica", "Crítica"]
   ];
   CFG = window.ACL_CONFIG || loadStoredConfig();
+  if (!window.ACL_PERCENTILES && CFG?.percentiles) PERCENTILES = CFG.percentiles;
   const root = document.getElementById("app");
   let storageOkay = true;
   let state = loadState();
@@ -495,3 +496,4 @@
 
   render();
 })();
+
