@@ -142,6 +142,14 @@
     return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
   }
 
+  function reportIntro(author) {
+    const name = normalizeName(author);
+    const institution = "l’EOE del CEIP Eugenio Martí Sanchis de Benicull de Xúquer";
+    return name
+      ? `${name}, com a orientadora educativa de ${institution}, presenta aquest informe per sintetitzar els resultats de les proves ACL aplicades al grup, identificar-ne els aspectes més consolidats i aquells que convé continuar treballant. La informació es recull per a orientar la planificació de les actuacions educatives.`
+      : `Des de l’orientació educativa de ${institution}, s’elabora aquest informe per sintetitzar els resultats de les proves ACL aplicades al grup, identificar-ne els aspectes més consolidats i aquells que convé continuar treballant. La informació es recull per a orientar la planificació de les actuacions educatives.`;
+  }
+
   function currentGrade() {
     return state.group ? CFG.grades[String(state.group.grade)] : null;
   }
@@ -215,11 +223,9 @@
           <div class="privacy-chip">Les dades es queden en este navegador</div>
         </header>
         <header class="print-report-header">
-          <div class="print-report-school">CEIP Eugenio Martí Sanchis · Benicull de Xúquer</div>
           <p class="print-report-kicker">AVALUACIÓ DE LA COMPRENSIÓ LECTORA · ${esc(grade.testId)}</p>
           <h1>Informe de grup</h1>
-          <div class="print-report-author" id="print-report-author-line" ${group.reportAuthor ? "" : "hidden"}><strong id="print-report-author-name">${esc(group.reportAuthor || "")}</strong> · Orientadora educativa</div>
-          <p class="print-report-intro">Des de l’orientació educativa, es presenta aquesta síntesi dels resultats de les proves ACL com a suport a la valoració pedagògica i a la planificació de l’aula. La lectura conjunta de les dimensions de comprensió i dels tipus de text permet reconéixer fortaleses i concretar aspectes que convé continuar treballant.</p>
+          <p class="print-report-intro" id="print-report-intro">${esc(reportIntro(group.reportAuthor))}</p>
         </header>
         ${grade.textTypeIssues && ((grade.textTypeIssues.unmappedQuestions || []).length || Object.keys(grade.textTypeIssues.ambiguousQuestions || {}).length) ? `<div class="notice"><strong>Revisió de criteris:</strong> ACL-${group.grade} té ítems amb tipologia textual duplicada o sense classificar en l'Excel actual; eixos ítems no entren en la interpretació per tipus de text.</div>` : ""}
         <section class="card topbar">
@@ -526,10 +532,8 @@
     document.getElementById("report-author")?.addEventListener("input", event => {
       state.group.reportAuthor = event.target.value.trim();
       saveState();
-      const authorLine = document.getElementById("print-report-author-line");
-      const authorName = document.getElementById("print-report-author-name");
-      if (authorName) authorName.textContent = state.group.reportAuthor;
-      if (authorLine) authorLine.hidden = !state.group.reportAuthor;
+      const intro = document.getElementById("print-report-intro");
+      if (intro) intro.textContent = reportIntro(state.group.reportAuthor);
     });
     document.getElementById("print-report")?.addEventListener("click", () => {
       const includeStudents = document.getElementById("include-student-results")?.checked;
