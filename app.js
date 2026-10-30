@@ -214,12 +214,20 @@
           <div><div class="eyebrow">Avaluació de la comprensió lectora</div><h1>ACL · Registre de resultats</h1><p class="subtitle">Corrector ràpid i resum del grup, sense fórmules amagades.</p></div>
           <div class="privacy-chip">Les dades es queden en este navegador</div>
         </header>
+        <header class="print-report-header">
+          <div class="print-report-school">CEIP Eugenio Martí Sanchis · Benicull de Xúquer</div>
+          <p class="print-report-kicker">AVALUACIÓ DE LA COMPRENSIÓ LECTORA · ${esc(grade.testId)}</p>
+          <h1>Informe de grup</h1>
+          <div class="print-report-author" id="print-report-author-line" ${group.reportAuthor ? "" : "hidden"}><strong id="print-report-author-name">${esc(group.reportAuthor || "")}</strong> · Orientadora educativa</div>
+          <p class="print-report-intro">Des de l’orientació educativa, es presenta aquesta síntesi dels resultats de les proves ACL com a suport a la valoració pedagògica i a la planificació de l’aula. La lectura conjunta de les dimensions de comprensió i dels tipus de text permet reconéixer fortaleses i concretar aspectes que convé continuar treballant.</p>
+        </header>
         ${grade.textTypeIssues && ((grade.textTypeIssues.unmappedQuestions || []).length || Object.keys(grade.textTypeIssues.ambiguousQuestions || {}).length) ? `<div class="notice"><strong>Revisió de criteris:</strong> ACL-${group.grade} té ítems amb tipologia textual duplicada o sense classificar en l'Excel actual; eixos ítems no entren en la interpretació per tipus de text.</div>` : ""}
         <section class="card topbar">
           <div class="group-meta">
             <span class="meta-pill">ACL-${group.grade} · ${grade.itemCount} ítems</span>
             <span class="meta-pill">Grup ${esc(group.group)}</span>
             ${group.schoolYear ? `<span class="meta-pill">${esc(group.schoolYear)}</span>` : ""}
+            ${group.date ? `<span class="meta-pill">${new Date(`${group.date}T00:00:00`).toLocaleDateString("ca-ES")}</span>` : ""}
             <span class="meta-pill">${group.pass === "P1" ? "P1" : group.pass === "P2" ? "P2" : "Altra passada"}</span>
             <span class="meta-pill">${group.mode === "paper" ? "Paper" : "Forms"}</span>
           </div>
@@ -478,7 +486,7 @@
       ${incompleteCount ? `<div class="warning-inline">${incompleteCount} registre/s encara incomplet/s. No entren en les mitjanes, percentils ni distribució del grup fins que cada ítem estiga marcat com a resposta o «En blanc».</div>` : ""}
       <header class="report-heading">
         <div><div class="eyebrow">Informe de grup</div><h2>Resultats per a orientar la intervenció</h2><p>Tria si vols incloure també la taula individual amb els noms en el document.</p></div>
-        <div class="report-actions no-print"><label class="report-student-option"><input id="include-student-results" type="checkbox" checked>Incloure noms i resultats individuals</label><button class="primary report-print-button" id="print-report" type="button">Imprimir o guardar en PDF</button></div>
+        <div class="report-actions no-print"><label class="report-author-control" for="report-author">Nom i cognoms per a la signatura de l'informe<input id="report-author" type="text" value="${esc(group.reportAuthor || "")}" placeholder="Escriu el teu nom i cognoms" autocomplete="name"></label><label class="report-student-option"><input id="include-student-results" type="checkbox" checked>Incloure noms i resultats individuals</label><button class="primary report-print-button" id="print-report" type="button">Imprimir o guardar en PDF</button></div>
       </header>
       <div class="result-columns report-columns">
         <section class="subcard report-chart-card"><h3>Dimensions de comprensió</h3><p class="helper chart-explainer">Percentatge d'encerts sobre les respostes contestades. Les respostes en blanc es mostren a banda.</p>${domainRows}</section>
@@ -515,6 +523,14 @@
     document.getElementById("delete-student")?.addEventListener("click", deleteStudent);
     document.getElementById("export-json")?.addEventListener("click", exportJson);
     document.getElementById("export-csv")?.addEventListener("click", () => exportCsv(grade));
+    document.getElementById("report-author")?.addEventListener("input", event => {
+      state.group.reportAuthor = event.target.value.trim();
+      saveState();
+      const authorLine = document.getElementById("print-report-author-line");
+      const authorName = document.getElementById("print-report-author-name");
+      if (authorName) authorName.textContent = state.group.reportAuthor;
+      if (authorLine) authorLine.hidden = !state.group.reportAuthor;
+    });
     document.getElementById("print-report")?.addEventListener("click", () => {
       const includeStudents = document.getElementById("include-student-results")?.checked;
       document.body.classList.toggle("print-with-students", Boolean(includeStudents));
