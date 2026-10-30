@@ -111,6 +111,9 @@ h1 { margin: 5px 0 6px; color: var(--brand); font-size: clamp(26px, 4vw, 38px); 
 .report-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 22px 0 4px; }
 .report-heading h2 { margin: 3px 0 4px; color: var(--brand); font-size: 23px; }
 .report-heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.report-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.report-student-option { display: flex; align-items: center; gap: 7px; color: #42534e; font-size: 12px; font-weight: 650; }
+.report-student-option input { accent-color: var(--brand); width: 16px; height: 16px; margin: 0; }
 .report-print-button { flex: 0 0 auto; }
 .report-columns { align-items: start; }
 .report-chart-card, .report-focus-card { min-width: 0; }
@@ -167,11 +170,13 @@ td.numeric, th.numeric { text-align: right; }
   .progress-box { text-align: left; }
 }
 @media print {
-  @page { size: A4 portrait; margin: 12mm; }
+  @page { size: A4 landscape; margin: 12mm; }
   body { background: #fff; color: #111; }
   .app-shell { width: 100%; max-width: none; padding: 0; }
   .brand-row { margin-bottom: 10px; }
-  .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, .individual-section, #save-status { display: none !important; }
+  .privacy-chip, .notice, .nav-tabs, .topbar .actions, .no-print, #save-status { display: none !important; }
+  .individual-section { display: none !important; }
+  body.print-with-students .individual-section { display: block !important; }
   .topbar { margin: 0 0 8px; padding: 0 0 8px; border: 0; border-bottom: 1px solid #ccd5d0; border-radius: 0; box-shadow: none; }
   .group-meta { gap: 6px; }
   .meta-pill { background: #fff; padding: 4px 7px; font-size: 10px; }
@@ -189,5 +194,13 @@ td.numeric, th.numeric { text-align: right; }
   .distribution-chart { height: 112px; }
   .distribution-track { height: 72px; }
   .report-method-note { margin-top: 8px; padding: 7px 9px; }
+  body.print-with-students .table-wrap.individual-section { overflow: visible; }
+  body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 8px; }
+  body.print-with-students .table-wrap.individual-section th,
+  body.print-with-students .table-wrap.individual-section td { padding: 4px 3px; white-space: normal; overflow-wrap: anywhere; }
+  body.print-with-students .table-wrap.individual-section th:first-child,
+  body.print-with-students .table-wrap.individual-section td:first-child { width: 18%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(2),
+  body.print-with-students .table-wrap.individual-section td:nth-child(2) { width: 10%; }
 }
 
