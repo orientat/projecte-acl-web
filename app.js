@@ -315,26 +315,45 @@
     const decatypeCounts = Array.from({ length: 10 }, (_, i) => ({ level: i + 1, count: completeRows.filter(r => r.result.decatype === i + 1).length }));
     const pendingDecatypes = completeRows.filter(r => r.result.decatypePending).length;
     const incompleteCount = rows.length - completeRows.length;
-    const domainRows = DIMENSIONS.map(([key, name]) => {
+    const domainData = DIMENSIONS.map(([key, name]) => {
       const correct = completeRows.reduce((sum, r) => sum + r.result.dimensions[key].correct, 0);
       const wrong = completeRows.reduce((sum, r) => sum + r.result.dimensions[key].wrong, 0);
+      const blank = completeRows.reduce((sum, r) => sum + r.result.dimensions[key].blank, 0);
       const answered = correct + wrong;
       const total = completeRows.reduce((sum, r) => sum + r.result.dimensions[key].total, 0);
-      const errPct = answered ? wrong / answered * 100 : null;
       const correctPct = answered ? correct / answered * 100 : 0;
       const pcs = completeRows.map(r => r.result.dimensions[key].percentile).filter(v => v !== null);
       const meanPc = pcs.length ? Math.round(pcs.reduce((a,b) => a+b, 0) / pcs.length) : null;
-      return `<div class="score-row"><strong>${name}</strong><span class="score-detail">${completeRows.length ? `${correct}/${total} encerts · ${answered ? `${Math.round(errPct)}% errors` : "sense respostes"}${meanPc !== null ? ` · PC mig ${meanPc}` : ""}` : "esperant una prova completa"}</span><span class="bar"><span style="width:${correctPct}%"></span></span></div>`;
-    }).join("");
+      return { key, name, correct, wrong, blank, answered, total, correctPct, meanPc };
+    });
+    const domainRows = domainData.map(d => `<div class="report-chart-row">
+      <div class="report-chart-label"><strong>${d.name}</strong><strong>${completeRows.length && d.answered ? `${Math.round(d.correctPct)}%` : "—"}</strong></div>
+      <div class="report-chart-track" role="img" aria-label="${d.name}: ${completeRows.length && d.answered ? `${Math.round(d.correctPct)} per cent d'encerts` : "sense dades"}"><span style="width:${d.correctPct}%"></span></div>
+      <div class="report-chart-detail">${completeRows.length ? `${d.correct}/${d.total} encerts · ${d.wrong} errors · ${d.blank} en blanc${d.meanPc !== null ? ` · PC mig ${d.meanPc}` : ""}` : "Esperant una prova completa"}</div>
+    </div>`).join("");
     const types = [...new Set(grade.items.map(i => i.textType).filter(Boolean))];
-    const typeRows = completeRows.length ? types.map(name => {
+    const typeData = completeRows.length ? types.map(name => {
       const correct = completeRows.reduce((sum, r) => sum + (r.result.textTypes[name]?.correct || 0), 0);
       const wrong = completeRows.reduce((sum, r) => sum + (r.result.textTypes[name]?.wrong || 0), 0);
+      const blank = completeRows.reduce((sum, r) => sum + (r.result.textTypes[name]?.blank || 0), 0);
       const total = completeRows.reduce((sum, r) => sum + (r.result.textTypes[name]?.total || 0), 0);
       const answered = correct + wrong;
       const pct = answered ? correct / answered * 100 : 0;
-      return `<div class="score-row"><strong>${esc(name)}</strong><span class="score-detail">${correct}/${total} encerts</span><span class="bar"><span style="width:${pct}%"></span></span></div>`;
-    }).join("") || `<p class="helper">No hi ha una classificació textual completa per a este curs.</p>` : `<p class="helper">Esperant una prova completa per a mostrar els totals.</p>`;
+      return { name, correct, wrong, blank, total, answered, pct };
+    }) : [];
+    const typeRows = typeData.map(d => `<div class="report-chart-row">
+      <div class="report-chart-label"><strong>${esc(d.name)}</strong><strong>${d.answered ? `${Math.round(d.pct)}%` : "—"}</strong></div>
+      <div class="report-chart-track" role="img" aria-label="${esc(d.name)}: ${d.answered ? `${Math.round(d.pct)} per cent d'encerts` : "sense dades"}"><span style="width:${d.pct}%"></span></div>
+      <div class="report-chart-detail">${d.correct}/${d.total} encerts · ${d.wrong} errors · ${d.blank} en blanc</div>
+    </div>`).join("") || `<p class="helper">${completeRows.length ? "No hi ha una classificació textual completa per a este curs." : "Esperant una prova completa per a mostrar els totals."}</p>`;
+    const focusAreas = [
+      ...domainData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.correctPct, kind: "Dimensió" })),
+      ...typeData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.pct, kind: "Tipus textual" }))
+    ].sort((a, b) => a.pct - b.pct).slice(0, 3);
+    const maxDecatypeCount = Math.max(1, ...decatypeCounts.map(d => d.count));
+    const decatypeBars = decatypeCounts.map(d => `<div class="distribution-column" aria-label="Decatipus ${d.level}: ${d.count} alumnes">
+      <strong>${d.count}</strong><div class="distribution-track"><span style="height:${Math.max(d.count ? 6 : 0, d.count / maxDecatypeCount * 100)}%"></span></div><small>D${d.level}</small>
+    </div>`).join("");
     const typeIssue = (grade.textTypeIssues?.unmappedQuestions?.length || Object.keys(grade.textTypeIssues?.ambiguousQuestions || {}).length)
       ? `<div class="warning-inline">El resum per tipus de text exclou ítems amb classificació pendent: ${grade.textTypeIssues.unmappedQuestions.join(", ") || "cap"}${Object.keys(grade.textTypeIssues.ambiguousQuestions).length ? `; amb doble classificació: ${Object.keys(grade.textTypeIssues.ambiguousQuestions).join(", ")}` : ""}. Cal revisar la plantilla original abans d'interpretar este bloc.</div>` : "";
     const table = rows.map(({ student, result }) => `<tr>
@@ -353,14 +372,20 @@
         <div class="metric"><div class="metric-label">Errors sobre respostes contestades</div><div class="metric-value">${totalAnswered ? `${Math.round(totalWrong / totalAnswered * 100)}%` : "—"}</div></div>
       </div>
       ${incompleteCount ? `<div class="warning-inline">${incompleteCount} registre/s encara incomplet/s. No entren en les mitjanes, percentils ni distribució del grup fins que cada ítem estiga marcat com a resposta o «En blanc».</div>` : ""}
-      <div class="result-columns">
-        <div class="subcard"><h3>Dimensions ACL · grup</h3>${domainRows}<p class="helper">El percentatge d'errors es calcula sobre les respostes contestades; els blancs es compten a banda.</p></div>
-        <div class="subcard"><h3>Tipus textuals · grup</h3>${typeRows}<p class="helper">Els ítems pendents de classificació no entren en estos totals.</p></div>
-        <div class="subcard"><h3>Distribució per decatipus</h3><div class="decatype-grid">${decatypeCounts.map(d => `<div class="decatype-chip"><span>D${d.level}</span><strong>${d.count}</strong></div>`).join("")}</div>${pendingDecatypes ? `<p class="helper">${pendingDecatypes} resultat/s pendent/s de revisar el barem.</p>` : ""}<p class="helper">Es compten només alumnes amb alguna resposta registrada.</p></div>
+      <header class="report-heading">
+        <div><div class="eyebrow">Informe de grup</div><h2>Resultats per a orientar la intervenció</h2><p>Resum de les proves completes del grup, sense mostrar noms en l'informe imprimible.</p></div>
+        <button class="primary report-print-button no-print" id="print-report" type="button">Imprimir o guardar en PDF</button>
+      </header>
+      <div class="result-columns report-columns">
+        <section class="subcard report-chart-card"><h3>Dimensions de comprensió</h3><p class="helper chart-explainer">Percentatge d'encerts sobre les respostes contestades. Les respostes en blanc es mostren a banda.</p>${domainRows}</section>
+        <section class="subcard report-chart-card"><h3>Resultats per tipus textual</h3><p class="helper chart-explainer">Percentatge d'encerts per tipus de text; els ítems sense classificació no entren en el càlcul.</p>${typeRows}</section>
+        <section class="subcard report-chart-card distribution-card"><h3>Distribució per decatipus</h3><p class="helper chart-explainer">Nombre d'alumnes en cada nivell, segons els intervals locals.</p><div class="distribution-chart" role="img" aria-label="Distribució del grup entre els deu decatipus">${decatypeBars}</div>${pendingDecatypes ? `<p class="helper">${pendingDecatypes} resultat/s pendent/s de revisar el barem.</p>` : ""}<p class="helper">Es compten només proves completes amb puntuació classificable.</p></section>
+        <section class="subcard report-focus-card"><h3>Àrees amb percentatge d'encerts més baix</h3>${focusAreas.length ? `<ol>${focusAreas.map(a => `<li><strong>${esc(a.name)}</strong> <span>${Math.round(a.pct)}% · ${a.kind}</span></li>`).join("")}</ol><p class="helper">Són pistes per a revisar objectius i activitats amb la informació d'aula i els criteris del manual. No són una conclusió diagnòstica.</p>` : `<p class="helper">Cal completar almenys una prova per a calcular les àrees del grup.</p>`}</section>
       </div>
-      <h3 class="section-title">Registre individual</h3>
-      <div class="table-wrap"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus*</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
-      <p class="footnote">* Els decatipus provenen dels intervals del llibre Excel actual i els PC de la taula local de barems; encara s'han de contrastar amb el manual i confirmar amb la docent. ACL-4 conté un interval no vàlid; les puntuacions afectades apareixen com «Revisar barem».</p>
+      <div class="report-method-note">El resum grupal utilitza només les proves completes. Els percentatges comparen encerts amb respostes contestades i compten els blancs a banda. Els decatipus i percentils són provisionals fins a confirmar-los amb el manual.</div>
+      <h3 class="section-title individual-section">Registre individual</h3>
+      <div class="table-wrap individual-section"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus*</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
+      <p class="footnote individual-section">* Els decatipus provenen dels intervals del llibre Excel actual i els PC de la taula local de barems; encara s'han de contrastar amb el manual i confirmar amb la docent. ACL-4 conté un interval no vàlid; les puntuacions afectades apareixen com «Revisar barem».</p>
     </section>`;
   }
 
@@ -382,6 +407,7 @@
     document.getElementById("delete-student")?.addEventListener("click", deleteStudent);
     document.getElementById("export-json")?.addEventListener("click", exportJson);
     document.getElementById("export-csv")?.addEventListener("click", () => exportCsv(grade));
+    document.getElementById("print-report")?.addEventListener("click", () => window.print());
     document.getElementById("change-config")?.addEventListener("click", () => {
       if (!confirm("Vols llevar la clau guardada d'este navegador? El grup i les respostes es conservaran.")) return;
       try { localStorage.removeItem(CONFIG_STORE_KEY); } catch (_) { storageOkay = false; }
