@@ -10,7 +10,7 @@ Interfície estàtica per a registrar respostes i resumir resultats de proves AC
 
 ## Ús
 
-Obri [el web publicat](https://orientat.github.io/projecte-acl-web/), carrega el fitxer de configuració ACL des del teu dispositiu, crea el grup i registra cada resposta o omissió. Els resultats es poden exportar com a CSV per a Excel.
+Obri [el web publicat](https://orientat.github.io/projecte-acl-web/), carrega el fitxer de configuració ACL des del teu dispositiu, crea el grup i registra cada resposta o omissió. El resum de grup es pot consultar amb gràfics i imprimir o guardar en PDF, sense mostrar noms d'alumnat. El CSV és la taula de dades per a Excel.
 
 L'eina és un suport docent. Cal validar les claus, els barems i els criteris amb les fonts autoritzades abans d'usar els resultats.
 
