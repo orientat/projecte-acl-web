@@ -203,7 +203,7 @@ td.numeric, th.numeric { text-align: right; }
   .learning-grid, .text-learning-grid, .individual-skill-list { grid-template-columns: 1fr; }
 }
 @media print {
-  @page { size: A4 landscape; margin: 12mm; }
+  @page { size: A4 portrait; margin: 10mm; }
   body { background: #fff; color: #111; }
   .app-shell { width: 100%; max-width: none; padding: 0; }
   .brand-row { margin-bottom: 10px; }
@@ -231,19 +231,33 @@ td.numeric, th.numeric { text-align: right; }
   .individual-analysis-card h4 { font-size: 11px; }
   .report-learning-map, .learning-card, .individual-skill-row, .individual-type-profile, .individual-support { font-size: 9px; }
   .report-learning-map > h4, .group-action-plan h4, .individual-analysis-card h5 { font-size: 10px; }
-  .learning-grid, .individual-skill-list { gap: 5px; }
+  .learning-grid, .individual-skill-list { grid-template-columns: 1fr; gap: 5px; }
+  .text-learning-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .learning-card, .individual-skill-row { padding: 6px; }
   .learning-card p, .individual-skill-row p, .individual-type-profile li { font-size: 8px; }
   .individual-analysis-card { break-inside: auto; }
+  .report-learning-map, .report-interpretation { break-inside: auto; }
+  .section-title.individual-section { break-before: page; }
   .individual-skill-row { break-inside: avoid; }
   h4, h5, h6 { break-after: avoid; }
   body.print-with-students .table-wrap.individual-section { overflow: visible; }
-  body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 8px; }
+  body.print-with-students .table-wrap.individual-section table { width: 100%; min-width: 0; table-layout: fixed; font-size: 7px; }
   body.print-with-students .table-wrap.individual-section th,
-  body.print-with-students .table-wrap.individual-section td { padding: 4px 3px; white-space: normal; overflow-wrap: anywhere; }
+  body.print-with-students .table-wrap.individual-section td { padding: 3px 2px; white-space: normal; overflow-wrap: anywhere; }
+  body.print-with-students .table-wrap.individual-section th { padding: 3px 2px; white-space: normal; overflow-wrap: anywhere; font-size: 6px; }
   body.print-with-students .table-wrap.individual-section th:first-child,
-  body.print-with-students .table-wrap.individual-section td:first-child { width: 18%; }
+  body.print-with-students .table-wrap.individual-section td:first-child { width: 19%; }
   body.print-with-students .table-wrap.individual-section th:nth-child(2),
-  body.print-with-students .table-wrap.individual-section td:nth-child(2) { width: 10%; }
+  body.print-with-students .table-wrap.individual-section td:nth-child(2) { width: 8%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(3),
+  body.print-with-students .table-wrap.individual-section td:nth-child(3) { width: 8%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(4),
+  body.print-with-students .table-wrap.individual-section td:nth-child(4) { width: 5%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(5),
+  body.print-with-students .table-wrap.individual-section td:nth-child(5) { width: 6%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(6),
+  body.print-with-students .table-wrap.individual-section td:nth-child(6) { width: 6%; }
+  body.print-with-students .table-wrap.individual-section th:nth-child(n+7),
+  body.print-with-students .table-wrap.individual-section td:nth-child(n+7) { width: 12%; }
 }
 
