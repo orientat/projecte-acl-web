@@ -25,10 +25,24 @@
   function loadStoredConfig() {
     try {
       const parsed = JSON.parse(localStorage.getItem(CONFIG_STORE_KEY) || "null");
-      return isValidConfig(parsed) ? parsed : null;
+      return isValidConfig(parsed) ? normalizeConfig(parsed) : null;
     } catch (_) {
       return null;
     }
+  }
+
+  function normalizeConfig(config) {
+    // La docent ha confirmat que el full ACL-4 conté 24–25 per al decatipus 8.
+    // Corregeix també les claus ja guardades en el navegador, sense tocar les respostes.
+    const grade4 = config?.grades?.["4"];
+    const range8 = grade4?.decatypeRanges?.find(range => range.decatype === 8);
+    if (range8 && (range8.min !== 24 || range8.max !== 25 || range8.valid !== true)) {
+      range8.min = 24;
+      range8.max = 25;
+      range8.valid = true;
+      range8.sourceNote = "Correcció confirmada per la docent: 24–25 (full Excel original protegit)";
+    }
+    return config;
   }
 
   function isValidConfig(parsed) {
@@ -67,9 +81,10 @@
       try {
         const parsed = JSON.parse(String(reader.result));
         if (!isValidConfig(parsed)) throw new Error("invalid config");
-        localStorage.setItem(CONFIG_STORE_KEY, JSON.stringify(parsed));
-        CFG = parsed;
-        PERCENTILES = parsed.percentiles || {};
+        const normalized = normalizeConfig(parsed);
+        localStorage.setItem(CONFIG_STORE_KEY, JSON.stringify(normalized));
+        CFG = normalized;
+        PERCENTILES = normalized.percentiles || {};
         render();
       } catch (_) {
         document.getElementById("config-error").hidden = false;
@@ -130,7 +145,7 @@
           <div><div class="eyebrow">Eina local de resultats</div><h1>ACL · Registre de resultats</h1><p class="subtitle">Una graella de correcció per curs, amb resums individuals i del grup.</p></div>
           <div class="privacy-chip">Funciona en este dispositiu</div>
         </header>
-        <div class="notice"><strong>Prototip en revisió.</strong> Les claus provenen del corrector valencià facilitat. Els resultats de tipologia textual de 6é i un interval de decatipus de 4t estan marcats perquè cal revisar-los. Les dades que introduïsques es queden al navegador; exporta una còpia JSON per a conservar-les.</div>
+        <div class="notice"><strong>Prototip en revisió.</strong> Les claus provenen del corrector valencià facilitat. La classificació textual d'ACL-6 encara té incidències pendents de revisió. Les dades que introduïsques es queden al navegador; exporta una còpia JSON per a conservar-les.</div>
         <section class="card setup-card">
           <h2 class="card-title">Crea un grup de prova</h2>
           <p class="card-copy">Cada fitxer de treball correspon a un curs, grup i passada. Pots obrir-lo sense connexió i exportar el registre per a Excel.</p>
@@ -181,7 +196,7 @@
           <div><div class="eyebrow">Avaluació de la comprensió lectora</div><h1>ACL · Registre de resultats</h1><p class="subtitle">Corrector ràpid i resum del grup, sense fórmules amagades.</p></div>
           <div class="privacy-chip">Les dades es queden en este navegador</div>
         </header>
-        <div class="notice"><strong>Revisió de criteris:</strong> per a 4t, la taula actual de decatipus té un interval impossible (26–25); eixes puntuacions es marcaran com a pendents. Per a 6é hi ha ítems amb tipologia textual duplicada o sense classificar en l'Excel actual.</div>
+        ${grade.textTypeIssues && ((grade.textTypeIssues.unmappedQuestions || []).length || Object.keys(grade.textTypeIssues.ambiguousQuestions || {}).length) ? `<div class="notice"><strong>Revisió de criteris:</strong> ACL-${group.grade} té ítems amb tipologia textual duplicada o sense classificar en l'Excel actual; eixos ítems no entren en la interpretació per tipus de text.</div>` : ""}
         <section class="card topbar">
           <div class="group-meta">
             <span class="meta-pill">ACL-${group.grade} · ${grade.itemCount} ítems</span>
@@ -350,6 +365,36 @@
       ...domainData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.correctPct, kind: "Dimensió" })),
       ...typeData.filter(d => d.answered).map(d => ({ name: d.name, pct: d.pct, kind: "Tipus textual" }))
     ].sort((a, b) => a.pct - b.pct).slice(0, 3);
+    const groupNarrative = completeRows.length ? (() => {
+      const best = [...domainData].filter(d => d.answered).sort((a, b) => b.correctPct - a.correctPct)[0];
+      const needs = [...domainData].filter(d => d.answered).sort((a, b) => a.correctPct - b.correctPct)[0];
+      const weakestTypes = [...typeData].filter(d => d.answered).sort((a, b) => a.pct - b.pct).slice(0, 2);
+      const lowCount = completeRows.filter(r => r.result.decatype !== null && r.result.decatype <= 3).length;
+      const dimensionalReading = best && needs
+        ? `En les dimensions, el percentatge més alt és ${best.name} (${Math.round(best.correctPct)}%) i el més baix és ${needs.name} (${Math.round(needs.correctPct)}%).`
+        : "No hi ha respostes contestades suficients per a comparar les dimensions.";
+      return `<p>La lectura grupal es basa en ${completeRows.length} prova/es completa/es de ${rows.length}. La mitjana és ${mean.toFixed(1)} encerts de ${grade.itemCount}. ${dimensionalReading} Hi ha ${completeRows.reduce((sum, r) => sum + r.result.blank, 0)} resposta/es en blanc en total; convé revisar-les separadament dels errors.</p>${weakestTypes.length ? `<p>Per tipus de text, els resultats més baixos són ${weakestTypes.map(t => `${esc(t.name)} (${Math.round(t.pct)}%)`).join(" i ")}. Es poden usar com a pista per seleccionar textos i activitats, sempre tenint en compte quants ítems representa cada categoria.</p>` : ""}<p>${lowCount} alumne/s amb prova completa està/estan en decatipus 1–3 segons els intervals carregats. La guia ACL planteja els decatipus com una comparació normativa i recomana interpretar-los junt amb les dimensions, els tipus d'error i l'observació docent; per això, este informe orienta la planificació i no és un diagnòstic.</p>`;
+    })() : `<p>Encara no hi ha proves completes per a redactar la interpretació grupal.</p>`;
+    const interventionIdeas = {
+      literal: "Practicar la localització d'informació explícita amb preguntes qui, què, quan i on; subratllar la frase del text que justifica cada resposta i distingir informació rellevant de la secundària.",
+      reorganitzacio: "Ordenar seqüències, agrupar dades amb criteris donats, triar títols que resumixen paràgrafs i elaborar esquemes o resums breus sense informació redundant.",
+      inferencial: "Combinar pistes del text amb coneixements previs per predir resultats, explicar relacions de causa i efecte i deduir el significat de paraules desconegudes pel context; demanar sempre quina pista ho sosté.",
+      critica: "Distingir fets d'opinions i realitat de fantasia, valorar comportaments o missatges i justificar el judici propi amb evidències del text."
+    };
+    const individualNarratives = completeRows.map(({ student, result }) => {
+      const dimensions = DIMENSIONS.map(([key, name]) => {
+        const d = result.dimensions[key];
+        return { key, name, pct: d.correct + d.wrong ? d.correct / (d.correct + d.wrong) * 100 : null, correct: d.correct, total: d.total, blank: d.blank };
+      }).filter(d => d.pct !== null).sort((a, b) => a.pct - b.pct);
+      const weakest = dimensions[0];
+      const strongest = dimensions[dimensions.length - 1];
+      const profile = weakest ? `La dimensió amb menys encerts és ${weakest.name} (${Math.round(weakest.pct)}%, ${weakest.correct}/${weakest.total}); la més alta és ${strongest.name} (${Math.round(strongest.pct)}%).` : "No hi ha respostes contestades per a comparar les dimensions.";
+      const blanks = result.blank ? ` Ha deixat ${result.blank} resposta/es en blanc, que es revisen per separat dels errors.` : " No consten respostes en blanc.";
+      const support = result.decatype !== null && result.decatype <= 3
+        ? `<p><strong>Possible intervenció (decatipus ${result.decatype}):</strong> prioritzar activitats breus i guiades de ${weakest?.name.toLocaleLowerCase() || "comprensió lectora"}. ${weakest ? interventionIdeas[weakest.key] : "Revisar primer les respostes i el procés lector amb l'alumne/a."} Repassar després les respostes amb el text al davant i observar si pot explicar quina pista l'ha ajudat.</p>`
+        : "";
+      return `<article class="subcard individual-analysis-card"><h4>${esc(student.name)} · ${result.raw}/${grade.itemCount} · ${result.decatype === null ? (result.decatypePending ? "decatipus pendent" : "decatipus no disponible") : `decatipus ${result.decatype}`}</h4><p>${profile}${blanks}</p>${support}</article>`;
+    }).join("");
     const maxDecatypeCount = Math.max(1, ...decatypeCounts.map(d => d.count));
     const decatypeBars = decatypeCounts.map(d => `<div class="distribution-column" aria-label="Decatipus ${d.level}: ${d.count} alumnes">
       <strong>${d.count}</strong><div class="distribution-track"><span style="height:${Math.max(d.count ? 6 : 0, d.count / maxDecatypeCount * 100)}%"></span></div><small>D${d.level}</small>
@@ -382,10 +427,13 @@
         <section class="subcard report-chart-card distribution-card"><h3>Distribució per decatipus</h3><p class="helper chart-explainer">Nombre d'alumnes en cada nivell, segons els intervals locals.</p><div class="distribution-chart" role="img" aria-label="Distribució del grup entre els deu decatipus">${decatypeBars}</div>${pendingDecatypes ? `<p class="helper">${pendingDecatypes} resultat/s pendent/s de revisar el barem.</p>` : ""}<p class="helper">Es compten només proves completes amb puntuació classificable.</p></section>
         <section class="subcard report-focus-card"><h3>Àrees amb percentatge d'encerts més baix</h3>${focusAreas.length ? `<ol>${focusAreas.map(a => `<li><strong>${esc(a.name)}</strong> <span>${Math.round(a.pct)}% · ${a.kind}</span></li>`).join("")}</ol><p class="helper">Són pistes per a revisar objectius i activitats amb la informació d'aula i els criteris del manual. No són una conclusió diagnòstica.</p>` : `<p class="helper">Cal completar almenys una prova per a calcular les àrees del grup.</p>`}</section>
       </div>
+      <section class="subcard report-interpretation"><h3>Interpretació del grup</h3>${groupNarrative}<p><strong>Possible resposta educativa:</strong> planificar activitats a partir de les dimensions amb resultats més baixos (${focusAreas.filter(a => a.kind === "Dimensió").map(a => esc(a.name)).join(", ") || "sense dades dimensionals suficients"}); modelar en veu alta com es troba una pista, es relaciona amb la pregunta i es justifica la resposta. Revisar l'evolució amb treballs d'aula, no només amb esta puntuació.</p></section>
       <div class="report-method-note">El resum grupal utilitza només les proves completes. Els percentatges comparen encerts amb respostes contestades i compten els blancs a banda. Els decatipus i percentils són provisionals fins a confirmar-los amb el manual.</div>
       <h3 class="section-title individual-section">Registre individual</h3>
       <div class="table-wrap individual-section"><table><thead><tr><th>Alumne/a</th><th>Estat</th><th class="numeric">Puntuació</th><th class="numeric">Errors</th><th class="numeric">En blanc</th><th class="numeric">Decatipus*</th><th class="numeric">Literal · PC</th><th class="numeric">Reorg. · PC</th><th class="numeric">Infer. · PC</th><th class="numeric">Crítica · PC</th></tr></thead><tbody>${table}</tbody></table></div>
-      <p class="footnote individual-section">* Els decatipus provenen dels intervals del llibre Excel actual i els PC de la taula local de barems; encara s'han de contrastar amb el manual i confirmar amb la docent. ACL-4 conté un interval no vàlid; les puntuacions afectades apareixen com «Revisar barem».</p>
+      <h3 class="section-title individual-section">Lectura individual i propostes per a decatipus 1–3</h3>
+      ${individualNarratives || `<p class="helper individual-section">Les interpretacions individuals apareixeran quan hi haja proves completes.</p>`}
+      <p class="footnote individual-section">Els perfils i les activitats són orientatius i es deriven de les dimensions descrites en la guia ACL; contrasteu-los amb el procés lector, les produccions i l'observació d'aula. Els decatipus provenen dels intervals del llibre Excel actual i els PC de la taula local; cal confirmar-ne la font i correspondència amb el manual.</p>
     </section>`;
   }
 
